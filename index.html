@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3PO: Multi-Path Collaborative Reasoning via Reinforcement Learning</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <!-- MathJax for rendering equations -->
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Custom Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['"Source Serif 4"', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .gradient-text {
+            background: linear-gradient(90deg, #0c4a6e 0%, #0284c7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .paper-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0,0,0,0.05);
+        }
+    </style>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased selection:bg-brand-100 selection:text-brand-900">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="font-bold text-xl tracking-tight text-gray-900">M3PO</div>
+                <div class="hidden md:flex space-x-8 text-sm font-medium text-gray-600">
+                    <a href="#abstract" class="hover:text-brand-600 transition">Abstract</a>
+                    <a href="#method" class="hover:text-brand-600 transition">Method</a>
+                    <a href="#results" class="hover:text-brand-600 transition">Results</a>
+                    <a href="#examples" class="hover:text-brand-600 transition">Examples</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="pt-20 pb-16 text-center px-4">
+        <div class="max-w-5xl mx-auto">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-gray-900">
+                Multi-Path Collaborative Reasoning <br class="hidden md:block" />
+                via <span class="gradient-text">Reinforcement Learning</span>
+            </h1>
+            
+            <!-- Authors -->
+            <div class="mt-8 text-lg text-gray-700 leading-relaxed">
+                <span class="whitespace-nowrap">Jindi Lv<sup>1,2</sup></span>, 
+                <span class="whitespace-nowrap">Yuhao Zhou<sup>1</sup></span>, 
+                <span class="whitespace-nowrap">Zheng Zhu<sup>2</sup></span>, 
+                <span class="whitespace-nowrap">Xiaofeng Wang<sup>2</sup></span>, 
+                <span class="whitespace-nowrap">Guan Huang<sup>2</sup></span>, 
+                <span class="whitespace-nowrap">Jiancheng Lv<sup>1</sup></span>
+            </div>
+            
+            <!-- Affiliations -->
+            <div class="mt-4 text-sm text-gray-500 font-medium uppercase tracking-wide">
+                <span class="mr-4"><sup>1</sup> Sichuan University</span>
+                <span><sup>2</sup> GigaAI</span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-10 flex flex-wrap justify-center gap-4">
+                <a href="https://arxiv.org/abs/2512.01485" target="_blank" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Paper
+                </a>
+                <a href="https://github.com/lvjindi/M3PO" class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-full shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    Code (Coming Soon)
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Abstract -->
+    <section id="abstract" class="py-12 bg-white border-y border-gray-100">
+        <div class="max-w-4xl mx-auto px-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Abstract</h2>
+            <p class="text-lg text-gray-700 font-serif leading-relaxed text-justify">
+                Chain-of-Thought (CoT) reasoning has significantly advanced the problem-solving capabilities of Large Language Models (LLMs), yet conventional CoT often exhibits internal determinism during decoding, limiting the exploration of plausible alternatives. Recent methods attempt to address this by generating soft abstract tokens to enable reasoning in a continuous semantic space. However, we find that such approaches remain constrained by the greedy nature of autoregressive decoding, which fundamentally isolates the model from alternative reasoning possibilities. 
+                <br><br>
+                In this work, we propose <strong>Multi-Path Perception Policy Optimization (M3PO)</strong>, a novel reinforcement learning framework that explicitly injects collective insights into the reasoning process. M3PO leverages parallel policy rollouts as naturally diverse reasoning sources and integrates cross-path interactions into policy updates through a lightweight collaborative mechanism. This design allows each trajectory to refine its reasoning with peer feedback, thereby cultivating more reliable multi-step reasoning patterns. Empirical results show that M3PO achieves state-of-the-art performance on both knowledge- and reasoning-intensive benchmarks.
+            </p>
+        </div>
+    </section>
+
+    <!-- Overview Figure -->
+
+    <section class="py-16">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="bg-white rounded-xl paper-shadow p-2 overflow-hidden">
+                <!-- Figure 1 Image -->
+                <img src="./assets/Figure1.png" alt="Figure 1: Comparative analysis of reasoning paradigms" class="w-full h-auto rounded-lg border border-gray-100">
+            </div>
+            <p class="mt-4 text-gray-600 text-center max-w-3xl mx-auto text-sm">
+                <strong>Figure 1: Comparative analysis of reasoning paradigms.</strong> M3PO consistently improves performance on knowledge and reasoning benchmarks compared to Soft Thinking and standard CoT.
+            </p>
+        </div>
+    </section>
+
+    <!-- Method Section -->
+    <section id="method" class="py-16 bg-brand-50/50">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Methodology</h2>
+            
+             <!-- Figure 3 (Full Width, Auto Height) -->
+            <div class="bg-white rounded-xl paper-shadow p-2 mb-10 overflow-hidden">
+                <img src="./assets/Figure3.png" alt="Figure 3: Multi-Path Collaborative Mechanism" class="w-full h-auto rounded-lg border border-gray-100">
+                <p class="mt-3 text-center text-sm text-gray-500 italic">Figure 3: Overview of the M3PO framework.</p>
+            </div>
+
+            <!-- Description (Below Figure) -->
+            <div class="max-w-6xl mx-auto">
+                <p class="text-lg leading-relaxed text-center text-gray-700 mb-8 max-w-4xl mx-auto">
+                    The M3PO framework establishes a closed-loop optimization process that seamlessly integrates multi-path reasoning with a step-level collaborative mechanism. As illustrated in Figure 3 above, the framework comprises three core components:
+                </p>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <!-- Component 1 -->
+                    <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-3">
+                            <span class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full bg-brand-100 text-brand-600 font-bold text-sm mr-3">1</span>
+                            <h3 class="font-bold text-gray-900">Parallel Rollouts</h3>
+                        </div>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            Given an input question, the policy model generates $N$ parallel rollouts. These serve as naturally diverse independent reasoning sources, eliminating the need for curated auxiliary datasets.
+                        </p>
+                    </div>
+
+                    <!-- Component 2 -->
+                    <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-3">
+                            <span class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full bg-brand-100 text-brand-600 font-bold text-sm mr-3">2</span>
+                            <h3 class="font-bold text-gray-900">Collaborative Learning</h3>
+                        </div>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            A parameter-free gating function enables cross-path interaction. Trajectories refine their reasoning by incorporating "peer insights" from other paths based on distributional consistency.
+                        </p>
+                    </div>
+
+                    <!-- Component 3 -->
+                    <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-3">
+                            <span class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full bg-brand-100 text-brand-600 font-bold text-sm mr-3">3</span>
+                            <h3 class="font-bold text-gray-900">Policy Optimization</h3>
+                        </div>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            Using group-relative advantage estimation, the policy is updated to reinforce refined reasoning patterns, internalizing robust logic without needing collaboration mechanisms at inference time.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section id="results" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-gray-900 mb-2 text-center">Experimental Results</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
+                Comparing GRPO vs M3PO on detailed benchmark datasets. M3PO consistently outperforms GRPO across both Knowledge and STEM domains.
+            </p>
+
+            <!-- Model Toggle -->
+            <div class="flex justify-center mb-10">
+                <div class="bg-gray-100 p-1 rounded-lg border border-gray-200 inline-flex shadow-inner">
+                    <button class="result-btn active px-6 py-2.5 text-sm font-semibold rounded-md text-brand-700 bg-white shadow-sm transition-all duration-200" onclick="switchResults('1.5b')">
+                        Qwen2.5-1.5B
+                    </button>
+                    <button class="result-btn px-6 py-2.5 text-sm font-semibold rounded-md text-gray-500 hover:text-gray-900 transition-all duration-200" onclick="switchResults('3b')">
+                        Qwen2.5-3B
+                    </button>
+                </div>
+            </div>
+
+            <!-- Charts Container -->
+            <div class="grid md:grid-cols-2 gap-8 mb-12">
+                <!-- Knowledge Chart -->
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition-all duration-300 hover:shadow-md">
+                    <h3 class="text-lg font-semibold text-gray-900 text-center mb-4">Knowledge Benchmarks (Detailed)</h3>
+                    <div class="relative h-72 w-full">
+                        <canvas id="chartKnowledge"></canvas>
+                    </div>
+                </div>
+
+                <!-- STEM Chart -->
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition-all duration-300 hover:shadow-md">
+                    <h3 class="text-lg font-semibold text-gray-900 text-center mb-4">STEM Benchmarks (Detailed)</h3>
+                    <div class="relative h-72 w-full">
+                        <canvas id="chartStem"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Highlights -->
+            <div>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <!-- Stat Card 1 -->
+                    <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm text-center">
+                        <div class="text-3xl font-bold text-brand-600 mb-1">63.0%</div>
+                        <div class="text-sm font-medium text-gray-500">MATH500 Accuracy</div>
+                        <div class="text-xs text-gray-400 mt-2">Qwen-3B + M3PO</div>
+                    </div>
+                    <!-- Stat Card 2 -->
+                    <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm text-center">
+                        <div class="text-3xl font-bold text-brand-600 mb-1">+9.5%</div>
+                        <div class="text-sm font-medium text-gray-500">Vs. GRPO Baseline</div>
+                        <div class="text-xs text-gray-400 mt-2">Knowledge Tasks</div>
+                    </div>
+                    <!-- Stat Card 3 -->
+                    <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm text-center">
+                        <div class="text-3xl font-bold text-brand-600 mb-1">State-of-the-Art</div>
+                        <div class="text-sm font-medium text-gray-500">Efficiency</div>
+                        <div class="text-xs text-gray-400 mt-2">Same inference cost as base model</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Examples Section -->
+    <section id="examples" class="py-16 bg-gray-50 border-t border-gray-200">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Qualitative Analysis</h2>
+            
+            <!-- Tab Controls -->
+            <div class="flex flex-wrap justify-center mb-8 gap-2">
+                <div class="bg-white p-1 rounded-lg border border-gray-200 inline-flex shadow-sm">
+                    <button class="tab-btn active px-4 py-2 text-sm font-medium rounded-md text-brand-700 bg-brand-50" onclick="switchTab('math')">
+                        Comparison (Math)
+                    </button>
+                    <button class="tab-btn px-4 py-2 text-sm font-medium rounded-md text-gray-500 hover:text-gray-900" onclick="switchTab('knowledge')">
+                        Knowledge Reasoning
+                    </button>
+                    <button class="tab-btn px-4 py-2 text-sm font-medium rounded-md text-gray-500 hover:text-gray-900" onclick="switchTab('stem')">
+                        STEM & MMLU
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 1: Comparison (Math) -->
+            <div id="math-content" class="tab-content block">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                    <div class="p-6 border-b border-gray-100 bg-gray-50/50">
+                        <span class="text-xs font-bold uppercase tracking-wider text-brand-600">Mathematical Reasoning</span>
+                        <p class="mt-2 text-gray-900 font-medium">Question: What is the ones digit of \( 22^{22 \cdot (11^{11})} \)?</p>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+                        <!-- Soft Thinking -->
+                        <div class="p-6 bg-red-50/30">
+                            <h4 class="font-bold text-red-800 mb-4 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                Soft Thinking (Baseline)
+                            </h4>
+                            <div class="text-sm text-gray-700 font-mono text-justify leading-relaxed opacity-80">
+                                To find the ones digit... we focus on the base number which is 2... <span class="bg-red-100 text-red-700 px-1">Let, let's observe...</span> We observe ones digits repeat every 4 numbers... <span class="bg-red-100 text-red-700 px-1">22 \cdot 4 = 2\n]This,\n</span>... Now we simplify... <span class="bg-red-100 text-red-700 px-1">text(remainder is }2)</span> ... <span class="bg-red-100 text-red-700 px-1">Finally, we ones digit of...</span>
+                                <div class="mt-4 text-xs text-red-600 font-bold">Analysis: Reasoning contains noise, erroneous insertions, and formatting defects.</div>
+                            </div>
+                        </div>
+
+                        <!-- M3PO -->
+                        <div class="p-6 bg-green-50/30">
+                            <h4 class="font-bold text-green-800 mb-4 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                M3PO (Ours)
+                            </h4>
+                            <div class="text-sm text-gray-700 font-mono text-justify leading-relaxed">
+                                To determine the ones digit... we focus on the base number 22, which is 2.
+                                <br><br>
+                                1. Pattern of powers of 2: 2, 4, 8, 6. Repeats every 4.<br>
+                                2. Determine exponent \( 22 \cdot (11^{11}) \pmod 4 \).<br>
+                                3. \( 22 \equiv 2 \pmod 4 \).<br>
+                                4. Problem reduces to finding ones digit of \( 2^2 = 4 \).
+                                <div class="mt-4 font-bold">Answer: 4</div>
+                                <div class="mt-4 text-xs text-green-600 font-bold">Analysis: Clean, consistent formatting, and correct logical derivation.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Knowledge Reasoning -->
+            <div id="knowledge-content" class="tab-content hidden space-y-6">
+                <!-- Example 1 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                    <div class="p-6 border-b border-gray-100 bg-gray-50/50">
+                        <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Knowledge Example 1</span>
+                        <p class="mt-2 text-gray-900 font-medium">Question: Who will take the throne after the queen dies? (Context: Queen Elizabeth II)</p>
+                    </div>
+                    <div class="p-6">
+                        <h4 class="font-bold text-brand-800 mb-2">M3PO Reasoning</h4>
+                        <p class="text-sm text-gray-700 mb-4 font-mono bg-gray-50 p-4 rounded border border-gray-200">
+                            Queen Elizabeth II is the current monarch... According to information provided, her heir apparent is her eldest son, Charles, Prince of Wales. Therefore, if Queen Elizabeth II were to die, Charles would most likely take the throne.
+                        </p>
+                        <div class="flex items-center text-green-700 font-bold text-sm">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Result: Charles, Prince of Wales
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Example 2 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                    <div class="p-6 border-b border-gray-100 bg-gray-50/50">
+                        <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Knowledge Example 2</span>
+                        <p class="mt-2 text-gray-900 font-medium">Question: What year did Guns N Roses perform a promo for a movie starring Arnold Schwarzenegger as a former New York Police detective?</p>
+                    </div>
+                    <div class="p-6">
+                        <h4 class="font-bold text-brand-800 mb-2">M3PO Reasoning</h4>
+                        <p class="text-sm text-gray-700 mb-4 font-mono bg-gray-50 p-4 rounded border border-gray-200">
+                            1. Identify the movie: The context mentions "End of Days (film)", which is a 1999 American supernatural action horror film starring Arnold Schwarzenegger.<br>
+                            2. Confirm the role: The movie features Arnold Schwarzenegger as a former New York Police Department detective named Jericho Cane.<br>
+                            3. Check for promo: The context states that during "End of Days" editing, soundtrack songs were overlaid... implies Guns N' Roses performed a promo.<br>
+                            4. Determine the year: Given that "End of Days" is a 1999 film... Guns N' Roses performed a promo for this movie in 1999.
+                        </p>
+                        <div class="flex items-center text-green-700 font-bold text-sm">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Result: 1999
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: STEM & MMLU -->
+            <div id="stem-content" class="tab-content hidden space-y-6">
+                <!-- Example 1 (MMLU) -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                    <div class="p-6 border-b border-gray-100 bg-gray-50/50">
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">MMLU-STEM Example</span>
+                        <p class="mt-2 text-gray-900 font-medium">Question: Find the degree for the given field extension Q(sqrt(2), sqrt(3)) over Q.</p>
+                    </div>
+                    <div class="p-6">
+                        <h4 class="font-bold text-indigo-800 mb-2">M3PO Reasoning</h4>
+                        <p class="text-sm text-gray-700 mb-4 font-mono bg-gray-50 p-4 rounded border border-gray-200">
+                            Let's consider the basis of Q[sqrt(2), sqrt(3)] over Q. We know that sqrt(2) and sqrt(3) are linearly independent over Q. So we can take the set {1, sqrt(2), sqrt(3), sqrt(6)} as a basis. This is because any element... can be written uniquely as a linear combination...<br>
+                            The minimal polynomial of sqrt(2) over Q is x^2 - 2 (degree 2).<br>
+                            The minimal polynomial of sqrt(3) over Q is x^2 - 3 (degree 2).<br>
+                            Since sqrt(2) and sqrt(3) are algebraically independent, the degree is 2 * 2 = 4.
+                        </p>
+                        <div class="flex items-center text-green-700 font-bold text-sm">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Result: 4 (Option B)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Example 2 (ARC) -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                    <div class="p-6 border-b border-gray-100 bg-gray-50/50">
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">ARC-Challenge Example</span>
+                        <p class="mt-2 text-gray-900 font-medium">Question: When an electric current is passed through water (H\(_2\)O) using a specific apparatus, hydrogen (H\(_2\)) and oxygen (O\(_2\)) gases form. How can this reaction be shown in a chemical equation?</p>
+                    </div>
+                    <div class="p-6">
+                        <h4 class="font-bold text-indigo-800 mb-2">M3PO Reasoning</h4>
+                        <p class="text-sm text-gray-700 mb-4 font-mono bg-gray-50 p-4 rounded border border-gray-200">
+                            1. Write equation for decomposition of water: H\(_2\)O splits into H\(_2\) and O\(_2\).<br>
+                            2. Balanced equation: 2H\(_2\)O(l) \(\rightarrow\) 2H\(_2\)(g) + O\(_2\)(g).<br>
+                            3. Verify options:<br>
+                            - Option A: H\(_2\)O \(\rightarrow\) H + O + H (Incorrect atoms)<br>
+                            - Option B: 2H\(_2\)O(l) \(\rightarrow\) 2H\(_2\)(g) + O\(_2\)(g) (Correct)<br>
+                            - Option C: H:O:H structure (Incorrect)<br>
+                            Therefore, the correct chemical equation is given by Option B.
+                        </p>
+                        <div class="flex items-center text-green-700 font-bold text-sm">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Result: Option B
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Citation -->
+    <section class="py-16 bg-white border-t border-gray-200">
+        <div class="max-w-4xl mx-auto px-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Citation</h2>
+            <div class="bg-gray-800 rounded-lg p-6 overflow-x-auto relative group">
+                <button class="absolute top-4 right-4 text-gray-400 hover:text-white transition" onclick="copyCitation()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                </button>
+                <pre class="text-gray-300 font-mono text-sm" id="citation-text">@article{lv2025multi,
+  title={Multi-Path Collaborative Reasoning via Reinforcement Learning},
+  author={Lv, Jindi and Zhou, Yuhao and Zhu, Zheng and Wang, Xiaofeng and Huang, Guan and Lv, Jiancheng},
+  journal={arXiv preprint arXiv:2512.01485},
+  year={2025}
+}</pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 border-t border-gray-200 py-12">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+            <div class="text-gray-500 text-sm mb-4 md:mb-0">
+                &copy; 2025 M3PO Project.
+            </div>
+            <div class="flex space-x-6">
+                <a href="#" class="text-gray-400 hover:text-gray-600">Sichuan University</a>
+                <a href="#" class="text-gray-400 hover:text-gray-600">GigaAI</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
